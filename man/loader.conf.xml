@@ -397,12 +397,12 @@ sbvarsign --attr "${attr}" --key KEK.key --cert KEK.pem --output db.auth db db.e
       </varlistentry>
 
       <varlistentry>
-        <term>reboot-for-bitlocker</term>
+        <term>reboot-for-tpm</term>
 
         <listitem><para>Caveat: This feature is experimental, and is likely to be changed (or removed in its
         current form) in a future version of systemd.</para>
 
-        <para>Work around BitLocker requiring a recovery key when the boot loader was
+        <para>Work around TPM-sealed encryption keys requiring a recovery key when the boot loader was
         updated (disabled by default).</para>
 
         <para>Try to detect BitLocker encrypted drives along with an active TPM. If both are found and

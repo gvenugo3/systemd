@@ -510,7 +510,7 @@ int boot_loader_read_conf(BootConfig *config, FILE *file, const char *path) {
                 if (streq(field, "default"))
                         r = free_and_strdup(&config->default_pattern, p);
                 else if (STR_IN_SET(field, "timeout", "editor", "auto-entries", "auto-firmware",
-                                    "auto-poweroff", "auto-reboot", "beep", "reboot-for-bitlocker",
+                                    "auto-poweroff", "auto-reboot", "beep", "reboot-for-tpm",
                                     "secure-boot-enroll", "console-mode"))
                         r = 0; /* we don't parse these in userspace, but they are OK */
                 else {

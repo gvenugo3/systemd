@@ -140,7 +140,7 @@ typedef struct {
         bool auto_firmware;
         bool auto_poweroff;
         bool auto_reboot;
-        bool reboot_for_bitlocker;
+        bool reboot_for_tpm;
         RebootOnError reboot_on_error;
         secure_boot_enroll secure_boot_enroll;
         secure_boot_enroll_action secure_boot_enroll_action;
@@ -338,7 +338,7 @@ static void print_status(Config *config, char16_t *loaded_image_path) {
         printf("            auto-poweroff: %ls\n", yes_no(config->auto_poweroff));
         printf("              auto-reboot: %ls\n", yes_no(config->auto_reboot));
         printf("                     beep: %ls\n", yes_no(config->beep));
-        printf("     reboot-for-bitlocker: %ls\n", yes_no(config->reboot_for_bitlocker));
+        printf("     reboot-for-tpm: %ls\n", yes_no(config->reboot_for_tpm));
         printf("          reboot-on-error: %s\n",  reboot_on_error_to_string(config->reboot_on_error));
         printf("       secure-boot-enroll: %s\n",  secure_boot_enroll_to_string(config->secure_boot_enroll));
         printf("secure-boot-enroll-action: %s\n",  secure_boot_enroll_action_to_string(config->secure_boot_enroll_action));
@@ -1059,9 +1059,9 @@ static void config_defaults_load_from_file(Config *config, char *content) {
                         if (!parse_boolean(value, &config->beep))
                                 log_error("Error parsing 'beep' config option, ignoring: %s", value);
 
-                } else if (streq8(key, "reboot-for-bitlocker")) {
-                        if (!parse_boolean(value, &config->reboot_for_bitlocker))
-                                log_error("Error parsing 'reboot-for-bitlocker' config option, ignoring: %s",
+                } else if (streq8(key, "reboot-for-tpm")) {
+                        if (!parse_boolean(value, &config->reboot_for_tpm))
+                                log_error("Error parsing 'reboot-for-tpm' config option, ignoring: %s",
                                           value);
 
                 } else if (streq8(key, "reboot-on-error")) {
@@ -1967,17 +1967,17 @@ static void config_add_entry_osx(Config *config) {
 }
 
 #if defined(__i386__) || defined(__x86_64__) || defined(__arm__) || defined(__aarch64__)
-static EFI_STATUS call_boot_windows_bitlocker(const BootEntry *entry, EFI_FILE *root_dir, EFI_HANDLE parent_image) {
+static EFI_STATUS call_boot_windows_tpm(const BootEntry *entry, EFI_FILE *root_dir, EFI_HANDLE parent_image) {
         _cleanup_free_ EFI_HANDLE *handles = NULL;
         size_t n_handles;
         EFI_STATUS err;
 
         assert(entry);
 
-        // FIXME: Experimental for now. Should be generalized, and become a per-entry option that can be
-        // enabled independently of BitLocker, and without a BootXXXX entry pre-existing.
+        // FIXME: Experimental for now. Should become a per-entry option that can be
+        // enabled without a BootXXXX entry pre-existing.
 
-        /* BitLocker key cannot be sealed without a TPM present. */
+        /* TPM-sealed keys require a TPM present. */
         if (!tpm_present())
                 return EFI_NOT_FOUND;
 
@@ -2080,8 +2080,8 @@ static void config_add_entry_windows(Config *config, EFI_HANDLE *device, EFI_FIL
                         title ?: u"Windows Boot Manager",
                         u"\\EFI\\Microsoft\\Boot\\bootmgfw.efi");
 
-        if (config->reboot_for_bitlocker)
-                e->call = call_boot_windows_bitlocker;
+        if (config->reboot_for_tpm)
+                e->call = call_boot_windows_tpm;
 #endif
 }
 
