@@ -181,6 +181,9 @@ static int compare_product(const char *a, const char *b) {
         return strncmp(a, b, x);
 }
 
+
+
+
 static int compare_version(const char *a, const char *b) {
         assert(a);
         assert(b);
