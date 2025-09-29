@@ -1,9 +1,5 @@
 Bugfixes:
 
-* Many manager configuration settings that are only applicable to user
-  manager or system manager can be always set. It would be better to reject
-  them when parsing config.
-
 * Jun 01 09:43:02 krowka systemd[1]: Unit user@1000.service has alias user@.service.
   Jun 01 09:43:02 krowka systemd[1]: Unit user@6.service has alias user@.service.
   Jun 01 09:43:02 krowka systemd[1]: Unit user-runtime-dir@6.service has alias user-runtime-dir@.service.
