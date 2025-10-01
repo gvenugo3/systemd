@@ -169,6 +169,23 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: systemd/mkosi@d45142e329550abc9c6fc63c1f1f86e5286d3d67
 
+      - name: Cache mkosi packages
+        uses: actions/cache@v4
+        with:
+          path: /mnt/mkosi/tmp/cache
+          key: mkosi-packages-${{ matrix.distro }}-${{ matrix.release }}-${{ hashFiles('mkosi/**', 'meson.build', 'meson_options.txt') }}
+          restore-keys: |
+            mkosi-packages-${{ matrix.distro }}-${{ matrix.release }}-
+            mkosi-packages-${{ matrix.distro }}-
+
+      - name: Cache build directory
+        uses: actions/cache@v4
+        with:
+          path: /mnt/mkosi/build
+          key: mkosi-build-${{ matrix.distro }}-${{ matrix.release }}-${{ github.sha }}
+          restore-keys: |
+            mkosi-build-${{ matrix.distro }}-${{ matrix.release }}-
+
       # Freeing up disk space with rm -rf can take multiple minutes. Since we don't need the extra free space
       # immediately, we remove the files in the background. However, we first move them to a different location
       # so that nothing tries to use anything in these directories anymore while we're busy deleting them.
