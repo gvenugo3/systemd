@@ -17,6 +17,7 @@
 #include "log.h"
 #include "path-util.h"
 #include "pretty-print.h"
+#include "stat-util.h"
 #include "string-util.h"
 #include "strv.h"
 #include "terminal-util.h"
@@ -325,9 +326,29 @@ static int cat_file_by_path(const char *p, bool *newline, CatFlags flags) {
 
         assert(p);
 
-        r = conf_file_new(p, /* root= */ NULL, CHASE_MUST_BE_REGULAR, &c);
+        r = conf_file_new(p, /* root= */ NULL, /* chase_flags= */ 0, &c);
         if (r < 0)
                 return log_error_errno(r, "Failed to chase '%s': %m", p);
+
+        /* Check if this is a masked file (symlink to /dev/null) */
+        if (path_equal(c->resolved_path, "/dev/null") || stat_may_be_dev_null(&c->st)) {
+                if (newline) {
+                        if (*newline)
+                                putc('\n', stdout);
+                        *newline = true;
+                }
+
+                printf("%s# %s is masked%s\n",
+                       ansi_highlight_magenta(),
+                       p,
+                       ansi_normal());
+                return 0;
+        }
+
+        /* Verify it's a regular file if not masked */
+        if (c->fd < 0 || !S_ISREG(c->st.st_mode))
+                return log_error_errno(c->fd < 0 ? c->fd : SYNTHETIC_ERRNO(EINVAL),
+                                       "Not a regular file: %s", p);
 
         return cat_file(c, newline, flags);
 }
